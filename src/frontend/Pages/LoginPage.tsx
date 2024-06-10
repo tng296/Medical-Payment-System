@@ -6,6 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 
 interface Credentials {
@@ -14,10 +16,12 @@ interface Credentials {
 }
 interface BillInfor {
     billID: string;
-    billCharge: number;
+    amountCharge: number;
 }
 
 const LoginPage: React.FC = () => {
+
+    const navigate = useNavigate();
     const [credentials, setCredentials] = useState<Credentials>({
         username: '',
         password: '',
@@ -25,7 +29,7 @@ const LoginPage: React.FC = () => {
 
     const [billInfor, setBillInfor] = useState<BillInfor>({
         billID: '',
-        billCharge: 0,
+        amountCharge: 0,
     });
 
     const handleLogin = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,6 +44,21 @@ const LoginPage: React.FC = () => {
             ...billInfor,
             [e.target.name]: e.target.value,
         });
+    }
+
+    const handleSubmission = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault();
+        const res = await axios.post('http://localhost:3000/billsubmission', billInfor);
+        try {
+            if (res && res.data) {
+                console.log(res.data);
+                navigate('/billpage');
+            }
+        }
+        catch (err) {
+            console.log(err);
+            alert('Cannot find your bill, please try again.');
+        }
     }
 
     return (
@@ -63,22 +82,22 @@ const LoginPage: React.FC = () => {
                 </Col>
                 <Col>
                     <Form>
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Group className="mb-3" >
                             <Form.Label>Bill Number</Form.Label>
                             <Form.Control type="text" placeholder="Enter your bill number" onChange={handleBill} name="billID" />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="formBasicPassword">
                             <Form.Label>Charge Due</Form.Label>
-                            <Form.Control type="password" placeholder="Enter amount due to find your bill" onChange={handleBill} name="billCharge" />
+                            <Form.Control type="text" placeholder="Enter amount due to find your bill" onChange={handleBill} name="amountCharge" />
                         </Form.Group>
-                        <Button variant="primary" type="submit">
+                        <Button variant="primary" type="submit" onClick={handleSubmission}>
                             Submit
                         </Button>
                     </Form>
                 </Col>
             </Row>
 
-        </Container>
+        </Container >
 
     )
 }
